@@ -1,0 +1,36 @@
+BasedOnStyle: google
+
+# 缩进格式：4 空格
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+NamespaceIndentation: All
+
+ColumnLimit: 0
+
+AlignTrailingComments: true
+MaxEmptyLinesToKeep: 2
+
+# 花括号风格：else 块另起一行
+BreakBeforeBraces: Custom
+BraceWrapping:
+  BeforeElse: True
+
+BreakConstructorInitializers: AfterColon
+
+# BracketAlignmentStyle: Align
+
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossComments: false
+  
+AlignOperands: AlignAfterOperator
+
+BreakBeforeBinaryOperators: All
+BreakBeforeTernaryOperators: true
+
+IndentPPDirectives: BeforeHash
+
+AlwaysBreakAfterReturnType: None
+AlwaysBreakAfterDefinitionReturnType: None

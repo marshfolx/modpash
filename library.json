@@ -1,0 +1,9 @@
+{
+  "name": "modpash",
+  "version": "0.1",
+  "build": {
+    "srcFilter": [
+      "+<*.cpp>"
+    ]
+  }
+}
