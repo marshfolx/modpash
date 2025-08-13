@@ -295,7 +295,7 @@ namespace modpash {
 
         void listen() {
             // 轮询接收数据
-            if(_locked)
+            if (_locked)
                 return;
 
             auto t = request_available();
@@ -384,6 +384,9 @@ namespace modpash {
                     send_data(addr);
                     send_data(count_or_value);
                     _rtx->end_tx();
+
+                    // 处理其他需要延后执行的操作
+                    after_write();
                 }
             }
         }
@@ -409,6 +412,14 @@ namespace modpash {
          * @return int_fast8_t
          */
         virtual int_fast8_t on_write(uint16_t address, uint8_t count) = 0;
+
+
+        /**
+         * @brief 只在on_write 返回成功时调用，执行在请求完成后才能做的操作，比如修改从机波特率。
+         * 
+         */
+        virtual void after_write() {}
+
 
         uint8_t requested_address() const {
             return _rtx->rx_frame_address();
@@ -512,8 +523,8 @@ namespace modpash {
 
         /**
          * @brief 一次响应尚未完成时，需要修改从机地址，只能在响应完成后才能修改。
-         * 
-         * @param new_address 
+         *
+         * @param new_address
          */
         void begin_later(uint8_t new_address) {
             _pending_address = new_address;
