@@ -510,7 +510,12 @@ namespace modpash {
             _rtx->set_secondary_broadcast_address(secondary_broadcast);
         }
 
-        void restart(uint8_t new_address) {
+        /**
+         * @brief 一次响应尚未完成时，需要修改从机地址，只能在响应完成后才能修改。
+         * 
+         * @param new_address 
+         */
+        void begin_later(uint8_t new_address) {
             _pending_address = new_address;
         }
 
