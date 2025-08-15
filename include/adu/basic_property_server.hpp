@@ -250,12 +250,6 @@ namespace modpash {
          * @return false
          */
         void respond(request_type t) {
-            if(_enable_busy_exception && busy()) {
-                // 如果处于忙状态，直接返回异常响应
-                _respond_exception(RESPONSE_ERROR_BUSY);
-                return;
-            }
-
             _locked = true;
 
             switch (t) {
@@ -264,7 +258,13 @@ namespace modpash {
 
                 case request_type::read:
                 case request_type::write:
-                    on_access(t);
+                    if (_enable_busy_exception && busy()) {
+                        // 如果处于忙状态，直接返回异常响应
+                        _respond_exception(RESPONSE_ERROR_BUSY);
+                    }
+                    else {
+                        on_access(t);
+                    }
                     break;
 
                 case request_type::report_id:
@@ -424,7 +424,7 @@ namespace modpash {
 
         /**
          * @brief 只在on_write 返回成功时调用，执行在请求完成后才能做的操作，比如修改从机波特率。
-         * 
+         *
          */
         virtual void after_write() {}
 
