@@ -250,6 +250,11 @@ namespace modpash {
          * @return false
          */
         void respond(request_type t) {
+            if(_locked) {
+                // 如果正在处理响应，直接返回
+                return;
+            }
+
             _locked = true;
 
             switch (t) {
@@ -303,9 +308,6 @@ namespace modpash {
 
         void listen() {
             // 轮询接收数据
-            if (_locked)
-                return;
-
             auto t = request_available();
             if (t != request_type::none) {
                 respond(t);
