@@ -119,6 +119,8 @@ namespace modpash {
                                        // 必须延迟到请求处理完成后
 
         bool _enable_exception_response = true;
+        bool _enable_busy_exception = true;  // 状态为BUSY 时，自动返回BUSY 异常，默认启用
+
         bool _always_flush = true;  // 是否在每次发送请求后都强制刷新串口缓冲区，默认为true
 
         bool _locked = false;  // 正在处理响应时，锁定server，不处理新的请求
@@ -248,6 +250,12 @@ namespace modpash {
          * @return false
          */
         void respond(request_type t) {
+            if(_enable_busy_exception && busy()) {
+                // 如果处于忙状态，直接返回异常响应
+                _respond_exception(RESPONSE_ERROR_BUSY);
+                return;
+            }
+
             _locked = true;
 
             switch (t) {
@@ -648,8 +656,12 @@ namespace modpash {
             return _always_flush;
         }
 
-        void set_always_flush(bool flush) {
+        void enable_always_flush(bool flush) {
             _always_flush = flush;
+        }
+
+        void enable_busy_exception(bool enable) {
+            _enable_busy_exception = enable;
         }
 
         bool locked() const {

@@ -369,7 +369,7 @@ namespace modpash {
             return _always_flush;
         }
 
-        void set_always_flush(bool flush) {
+        void enable_always_flush(bool flush) {
             _always_flush = flush;
         }
     };
