@@ -80,10 +80,12 @@ namespace modpash {
      * - [6, 7]   : 底层收发器接收失败的帧个数，对应收发器的rx_miss_count()；
      * - [8, 9]   : Server 成功响应计数；
      * - [10, 11] : Server 异常响应计数，如果不启用异常响应，就不发出响应；
-     * - [12]     : 用户自定义信息开始；
+     * - []       : 用户自定义信息开始；
+     * - [12, 13] : 表示软件版本；
+     * - [14, 15] : 表示硬件版本；
+     * - [16, 17] : 自定义状态；
      *
-     * 如果用户没有自定义信息，那么从站ID 的响应帧ADU 部分长度为 4 + 11 = 15 字节；
-     * 用户自定义信息数量最多为255 - 11 = 244 字节。
+     * 除了12~17，用户自定义信息数量最多为255 - 11 - 6 = 238 字节。
      *
      * 【 Server 配置标志 】
      *
@@ -93,12 +95,14 @@ namespace modpash {
      *
      * @tparam TransceiverType
      */
-    template <typename TransceiverType>
+    template <typename TransceiverType, uint8_t EXTRA_INFO_COUNT = 0>
     class BasicPropertyServer {
        public:
         // static constexpr size_t DEFAULT_PROPERTY_BUFFER_SIZE = 32;  // 默认用来存储响应帧中的数据的缓冲区尺寸，单位是字节
 
         // static_assert((DEFAULT_PROPERTY_BUFFER_SIZE >= 16) && (DEFAULT_PROPERTY_BUFFER_SIZE % 2 == 0));
+
+        static constexpr uint8_t USER_INFO_COUNT = EXTRA_INFO_COUNT + 6;  // 除了6 个状态计数器外，用户自定义信息个数
 
        private:
         TransceiverType *_rtx;
@@ -124,6 +128,8 @@ namespace modpash {
         bool _always_flush = true;  // 是否在每次发送请求后都强制刷新串口缓冲区，默认为true
 
         bool _locked = false;  // 正在处理响应时，锁定server，不处理新的请求
+
+        uint8_t _user_info[USER_INFO_COUNT] = {0};  // 附加信息
 
        protected:
         bool _is_diagnostic_function(uint8_t function_code) {
@@ -157,12 +163,13 @@ namespace modpash {
         }
 
         void _respond_report_id() {
-            constexpr auto EXTRA_PROPERTY_COUNT = 5;  // 附加属性个数，1 个属性 + 4 个状态计数器
+            constexpr auto EXTRA_PROPERTY_COUNT = 5;  // 附加属性个数，1 个配置标志 + 4 个状态计数器
 
             // 先发送从站ID
             _rtx->begin_tx(_rtx->rx_frame_address());
             _rtx->tx(17);                            // 功能码
-            _rtx->tx(3 + EXTRA_PROPERTY_COUNT * 2);  // 2 个1 字节状态，加上1 字节属性个数，五个uint16 属性
+            // 响应数据长度，// 2 个1 字节状态，加上1 字节属性个数，五个uint16 属性，以及自定义信息
+            _rtx->tx(3 + EXTRA_PROPERTY_COUNT * 2 + USER_INFO_COUNT);
             _rtx->tx(_server_id);                    // 从站ID
             _rtx->tx(_run_status);                   // 运行状态
 
@@ -176,7 +183,10 @@ namespace modpash {
             send_data(_ok_counter);         // Server 成功响应计数
             send_data(_exception_counter);  // Server 异常响应计数
 
-            // TODO: 用户自定义信息
+            // 发送自定义信息
+            for(uint8_t i = 0; i < USER_INFO_COUNT; ++i) {
+                send_data(_user_info[i]);
+            }
 
             _rtx->end_tx();
         }
@@ -668,6 +678,38 @@ namespace modpash {
 
         bool locked() const {
             return _locked;
+        }
+
+        template<uint8_t Index>
+        void set_user_info(uint8_t d) {
+            static_assert(Index < USER_INFO_COUNT, "User info size exceeds USER_INFO_COUNT");
+            _user_info[Index] = d;
+        }
+
+        template<uint8_t Index>
+        uint8_t user_info() const {
+            static_assert(Index < USER_INFO_COUNT, "User info size exceeds USER_INFO_COUNT");
+            return _user_info[Index];
+        }
+
+        void set_software_version(uint8_t h, uint8_t l) {
+            set_user_info<0>(h);
+            set_user_info<1>(l);
+        }
+
+        void set_hardware_version(uint8_t h, uint8_t l) {
+            set_user_info<2>(h);
+            set_user_info<3>(l);
+        }
+
+        void set_custom_status(uint8_t h, uint8_t l) {
+            set_user_info<4>(h);
+            set_user_info<5>(l);
+        }
+
+        void set_custom_status(uint16_t status) {
+            set_user_info<4>(static_cast<uint8_t>(status >> 8));
+            set_user_info<5>(static_cast<uint8_t>(status & 0xFF));
         }
     };
 
