@@ -17,6 +17,7 @@ namespace modpash {
 
     constexpr int8_t RESPONSE_TYPE_NONE = 0;
     constexpr int8_t RESPONSE_TYPE_OK = 1;
+    constexpr int8_t RESPONSE_TYPE_NO_RESPONSE = 2;  // 指定on_write 或on_read 不需要返回任何响应
 
 
     enum class request_type {

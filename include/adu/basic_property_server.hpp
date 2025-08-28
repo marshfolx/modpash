@@ -383,8 +383,12 @@ namespace modpash {
                 flag = on_write(addr, count_or_value_l);
             }
 
-            if (flag == 0) {
+            if (flag == RESPONSE_TYPE_NONE) {
                 flag = RESPONSE_ERROR_DEVICE_ERROR;  // 如果on_read 或 on_write 没有返回异常码，就认为是设备错误
+            }
+            else if(flag == RESPONSE_TYPE_NO_RESPONSE) {
+                // 不需要返回响应，终止处理
+                return;
             }
 
             if (flag < 0) {
