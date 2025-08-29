@@ -34,4 +34,4 @@ Modpash 是一个用于 Modbus 协议通信的 C++ 库，适用于嵌入式系�
 
 ## 许可证
 
-本项目使用 MIT 许可证。详情请查看 LICENSE 文件。
+本项目使用 MPL 许可证。详情请查看 LICENSE 文件。
