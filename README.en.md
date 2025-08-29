@@ -34,4 +34,4 @@ Please refer to the example code to learn how to use Modpash for Modbus communic
 
 ## License
 
-This project uses the MIT License. For details, please see the LICENSE file.
+This project uses the MPL License. For details, please see the LICENSE file.
